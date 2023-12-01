@@ -8,7 +8,7 @@
 
 An ischemic stroke occurs when a blood clot, known as a thrombus, plugs or blocks an artery which supplies the brain. As a result, the blood flow is restricted, not allowing the gas exchange and nutrition of the organs and tissues [[1](https://my.clevelandclinic.org/health/articles/17060-how-does-the-blood-flow-through-your-heart)]. This happens in critical and risky situations, when the blood blockage reaches the brain. At first, when the tissue is deprived of supply, cells begin to die; however, as time goes on, the likelihood of experiencing a stroke increases, which can lead to permanent brain damages or even death [[2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10112237/#:~:text=Mortality%20in%20the%20first%2030,on%20early%20treatment(11).)]
 
-In conlution: it is a **medical emergency** that needs immediate care. 
+In conclus  ion: it is a **medical emergency** that needs immediate care. 
 
 It is usually age-related, althought two-thirds of all strokes happen in people over the age of 65. However, there are also certain medical conditions that an either cause these kinds of strokes or make them more likely to happen. 
 

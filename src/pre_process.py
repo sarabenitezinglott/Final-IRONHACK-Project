@@ -8,7 +8,8 @@ from keras.preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras import regularizers 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, Dense
-from tensorflow.keras.applications import densenet
+from tensorflow.keras.applications import densenet, EfficientNetB0
+
 
 # Tried use mean subtraction, normalization, and standards to scale pixels, 
 # however each of these methods affected the colors of the images. Found an 
@@ -86,8 +87,17 @@ def get_weights(train_generator, test_generator, img_width, img_height, epochs):
 
     return model
 
+def get_weights_B0(train_generator, test_generator, img_width, img_height, epochs):
+    model = EfficientNetB0( include_top=True, weights=None,
+                            classes=2, input_shape=(img_width, img_height, 3))
+   
+    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+    model.fit(train_generator, epochs=epochs, validation_data=test_generator)
 
+    model_weights = model.get_weights()[0]
+    np.save("data/Efficient_weights.npy", model_weights)
 
+    return model
 
 
 
