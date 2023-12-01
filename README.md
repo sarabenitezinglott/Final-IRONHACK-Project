@@ -1,4 +1,4 @@
-<h1 style="text-align: center;"> Stroke blood clot images classification:  </h1>
+<h1 style="text-align: center;"> Automated Stroke Classification through Convolutional Neural Networks: A Comprehensive Analysis of Blood Clot Images for Improved Treatment Prescription  </h1>
 <h3 style="text-align: center;"> IRONHACK - Final project </h3>
 <h4 style="text-align: center;"> Sara Benítez-Inglott González </h4>
 
