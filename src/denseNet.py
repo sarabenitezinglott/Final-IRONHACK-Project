@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import numpy as np
 from keras.applications import densenet
 from keras.models import Model, load_model  
@@ -14,10 +17,13 @@ from tensorflow.keras.applications import densenet, EfficientNetB0
 
 "DenseNet model:"
 class DenseNet_model:
-    def __init__(self, train_generator=None, test_generator=None, img_width=150, img_height=150, epochs=2):
-        self.model = self.densenet_model(train_generator, test_generator, img_width, img_height, epochs)
+    def __init__(self, train_generator=None, validation_generator=None, img_width=150, img_height=150, epochs=2):
+        self.model = self.densenet_model(train_generator, validation_generator, img_width, img_height, epochs)
 
-    def densenet_model(self, train_generator, test_generator, img_width, img_height, epochs):  
+    #This CNN has three convolutiona layers -"Conv2D"- and 
+    #two fully connected layers -"Dense"model = Sequential()
+
+    def densenet_model(self, train_generator, validation_generator, img_width, img_height, epochs):  
         model = Sequential()
         model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(img_width, img_height, 3)))
         model.add(MaxPooling2D((2, 2)))
@@ -34,7 +40,7 @@ class DenseNet_model:
     def compile_model(self):
         self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    def train(self, train_generator, test_generator, epochs =2):
+    def train(self, train_generator, validation_generator, epochs =2):
         nb_validation_samples = 4
         batch_size = 2
 
@@ -42,7 +48,7 @@ class DenseNet_model:
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=4, verbose=1, min_delta=1e-4)
         callbacks_list = [early_stop, reduce_lr]
 
-        history = self.model.fit(train_generator,epochs=epochs,validation_data=test_generator,
+        history = self.model.fit(train_generator,epochs=epochs,validation_data=validation_generator,
                                           validation_steps=nb_validation_samples // batch_size,
                                           callbacks=callbacks_list)
 
@@ -52,16 +58,16 @@ class DenseNet_model:
         # In a DenseNet layer, the weights are stored in get_weights()[0], 
         # and the biases are stored in get_weights()[1].
         model_weights = self.model.get_weights()[0]
-        np.save("data/weights.npy", model_weights)
+        np.save("data/Dense_weights.npy", model_weights)
 
-    def evaluation(self, test_generator, class_names, batch_size):
+    def evaluation(self, validation_generator, class_names, batch_size):
         batch_size = 2
         verbose = 2
-        evaluate = self.model.evaluate(test_generator, class_names, batch_size, verbose)
+        evaluate = self.model.evaluate(validation_generator, class_names, batch_size, verbose)
         return evaluate
 
-    def predict_densenet(self, test_generator, class_names):  
-        image_batch, classes_batch = next(test_generator)
+    def predict_densenet(self, validation_generator, class_names):  
+        image_batch, classes_batch = next(validation_generator)
         predicted_batch = self.model.predict(image_batch)
         for k in range(0,image_batch.shape[0]):
             image = image_batch[k]

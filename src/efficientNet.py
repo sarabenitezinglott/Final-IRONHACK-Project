@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import numpy as np
 import keras
 import efficientnet.keras as efn 
@@ -12,7 +15,6 @@ from tensorflow.keras.losses import categorical_crossentropy
 from keras import regularizers 
 import matplotlib.pyplot as plt
 
-
 "EfficientNet model:"
 
 class EfficientNet:
@@ -20,9 +22,11 @@ class EfficientNet:
         self.model = self.efficient_model()
 
     def efficient_model(self):
-        inputs = layers.Input(shape=(150, 150, 3))
+        #Image size has to be 224 because we are using the EficcientNet B0 type.
+        inputs = layers.Input(shape=(224, 224, 3))
+        NUM_CLASSES = 2
         model = EfficientNetB0(include_top=False, input_tensor=inputs, 
-                               weights="imagenet")
+                               weights=None,classes=NUM_CLASSES)
     
         model.trainable = False
 
@@ -32,31 +36,43 @@ class EfficientNet:
         top_dropout_rate = 0.2
         x = layers.Dropout(top_dropout_rate, name="top_dropout")(x)
         outputs = layers.Dense(2, activation="softmax", name="pred")(x)
-
         model = keras.Model(inputs, outputs, name="EfficientNet")
-        optimizer = keras.optimizers.Adam(learning_rate=1e-2)
-        model.compile(
-            optimizer=optimizer, loss="categorical_crossentropy", 
-            metrics=["accuracy"])
         
         return model
 
-    
-    def train(self, train_generator, test_generator, epochs=2):
-        efficientnet_history = self.model.fit(train_generator, epochs=epochs,
-                                               validation_data=test_generator)
+    def compile_model(self):
+        optimizer = keras.optimizers.Adam(learning_rate=1e-2)  
+        self.model.compile(optimizer=optimizer, loss="categorical_crossentropy", 
+                          metrics=["accuracy"])
+        
+    def train(self, train_generator, validation_generator, epochs):
+        epochs = 2
+        verbose = 2
+        efficientnet_history = self.model.fit(train_generator,validation_data=validation_generator,
+                                              epochs = epochs, verbose = verbose)
 
         return efficientnet_history
     
-    def unfreeze_model(self, model): #maybe ponerlo arriba jjeje
-    # We unfreeze the top 20 layers while leaving BatchNorm layers 
-    # frozen
-        for layer in model.layers[-20:]:
-            if not isinstance(layer, layers.BatchNormalization):
-                layer.trainable = True
+    def get_weights(self):
+        # In a DenseNet layer, the weights are stored in get_weights()[0], 
+        # and the biases are stored in get_weights()[1].
+        model_weights = self.model.get_weights()[0]
+        np.save("data/Efficient_weights.npy", model_weights)
+    
+    def evaluation_B0(self, test_generator_x,test_generator_y):
+        evaluate = self.model.evaluate(test_generator_x,test_generator_y)
+        return evaluate
 
-        optimizer = keras.optimizers.Adam(learning_rate=1e-5)
-        model.compile(
-            optimizer=optimizer, 
-            loss="categorical_crossentropy", 
-            metrics=["accuracy"])
+
+    # def unfreeze_model(self, model): #maybe ponerlo arriba jjeje
+    # # We unfreeze the top 20 layers while leaving BatchNorm layers 
+    # # frozen
+    #     for layer in model.layers[-20:]:
+    #         if not isinstance(layer, layers.BatchNormalization):
+    #             layer.trainable = True
+
+    #     optimizer = keras.optimizers.Adam(learning_rate=1e-5)
+    #     model.compile(
+    #         optimizer=optimizer, 
+    #         loss="categorical_crossentropy", 
+    #         metrics=["accuracy"])

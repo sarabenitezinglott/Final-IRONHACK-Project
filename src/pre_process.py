@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import os
 import random
 import shutil
@@ -13,50 +16,69 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.applications import densenet, EfficientNetB0
 
-def split_images(dataset_path,train_path,test_path):
-    all_images = [f for f in os.listdir(dataset_path) if f.endswith(".jpg")]
+def createfolders(data_path,folder_names):
+    data_path = "../Final-IRONHACK-Project/data/original/"
+    folder_names= ["train_folder", "val_folder1"]
 
-    train_images, test_images = train_test_split(all_images, test_size=0.2, random_state=42)
+    for folders in folder_names:
+        folder_path = os.path.join(data_path, folders)
+        if not os.path.exists(folder_path):
+            os.mkdir(folder_path)
+            print(f"Folder {folders} created at: {folder_path}")
+        else: 
+            print(f"Folder {folders} already exists at: {folder_path}")
 
+def split_data(data_path):
+    all_images = [file for file in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, file))]
+    train_images, val_images = train_test_split(all_images, test_size=0.2, random_state=42)
+    
+    print(train_images)
+    print(val_images)
+
+    train_folder = "../Final-IRONHACK-Project/data/original/train_folder"
+    val_folder = "../Final-IRONHACK-Project/data/original/val_folder1"
+    
     for image in train_images:
-        shutil.copy(os.path.join(dataset_path, image), os.path.join(train_path, image))
+        src_path_t = os.path.join(data_path, image)
+        dst_path_t = os.path.join(train_folder, image)
+        shutil.move(src_path_t, dst_path_t)
 
-    for image in test_images:
-        shutil.copy(os.path.join(dataset_path, image), os.path.join(test_path, image))
-
+    for image in val_images:
+        src_path_v = os.path.join(data_path, image)
+        dst_path_v = os.path.join(val_folder, image)
+        shutil.move(src_path_v, dst_path_v)
 
 # Tried use mean subtraction, normalization, and standards to scale pixels, 
 # however each of these methods affected the colors of the images. Found an 
 # alternate approach in the "ImageDataGenerator" function. 
-   
-def image_generator1(train_data_dir, test_data_dir, img_width, img_height, batch_size):
-    data_generator = ImageDataGenerator(
-        validation_split = 0.2,  
+
+
+def image_generator(original_data_dir, img_width, img_height, batch_size):
+    data_datagen = ImageDataGenerator(
+        validation_split=0.2,  
         rescale=1. / 255,
         zoom_range=0.2,
         rotation_range=5,
         horizontal_flip=True, 
-        fill_mode = "nearest")
+        fill_mode="nearest")
 
-    test_imggen = ImageDataGenerator(rescale=1. / 255)
-
-    test_df = pd.DataFrame({
-        'filename': os.listdir(test_data_dir), 'class': 'test_class'})
-
-    train_generator = data_generator.flow_from_directory(  
-        train_data_dir,
+    train_generator = data_datagen.flow_from_directory(
+        original_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        class_mode='categorical')
+        class_mode='binary',
+        color_mode='rgb',
+        classes=None, subset="training")
 
-    test_generator = data_generator.flow_from_dataframe(  
-        test_df,
-        directory=test_data_dir,
+    validation_generator = data_datagen.flow_from_directory(
+        original_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        class_mode='categorical')
+        class_mode='binary',
+        color_mode='rgb',
+        classes=None, subset="validation")
 
-    return train_generator, test_generator
+    return train_generator, validation_generator
 
 def plot_augmented_images(train_generator, num_images=5):
     original_images = next(train_generator)
