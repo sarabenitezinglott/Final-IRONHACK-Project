@@ -1,4 +1,6 @@
 import os
+import random
+import shutil
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -6,17 +8,30 @@ from numpy import asarray
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator 
 from tensorflow.python.keras import regularizers 
+from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.applications import densenet, EfficientNetB0
+
+def split_images(dataset_path,train_path,test_path):
+    all_images = [f for f in os.listdir(dataset_path) if f.endswith(".jpg")]
+
+    train_images, test_images = train_test_split(all_images, test_size=0.2, random_state=42)
+
+    for image in train_images:
+        shutil.copy(os.path.join(dataset_path, image), os.path.join(train_path, image))
+
+    for image in test_images:
+        shutil.copy(os.path.join(dataset_path, image), os.path.join(test_path, image))
 
 
 # Tried use mean subtraction, normalization, and standards to scale pixels, 
 # however each of these methods affected the colors of the images. Found an 
 # alternate approach in the "ImageDataGenerator" function. 
-
+   
 def image_generator1(train_data_dir, test_data_dir, img_width, img_height, batch_size):
-    train_imggen = ImageDataGenerator(  
+    data_generator = ImageDataGenerator(
+        validation_split = 0.2,  
         rescale=1. / 255,
         zoom_range=0.2,
         rotation_range=5,
@@ -28,13 +43,13 @@ def image_generator1(train_data_dir, test_data_dir, img_width, img_height, batch
     test_df = pd.DataFrame({
         'filename': os.listdir(test_data_dir), 'class': 'test_class'})
 
-    train_generator = train_imggen.flow_from_directory(  
+    train_generator = data_generator.flow_from_directory(  
         train_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='categorical')
 
-    test_generator = test_imggen.flow_from_dataframe(  
+    test_generator = data_generator.flow_from_dataframe(  
         test_df,
         directory=test_data_dir,
         target_size=(img_width, img_height),
@@ -60,44 +75,6 @@ def plot_augmented_images(train_generator, num_images=5):
 
     plt.show()
 
-
-#This CNN has three convolutiona layers -"Conv2D"- and 
-#two fully connected layers -"Dense"
-
-def get_weights(train_generator, test_generator, img_width, img_height, epochs):
-    model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(img_width, img_height, 3)))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Conv2D(128, (3, 3), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-
-    
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    model.fit(train_generator, epochs=epochs, validation_data=test_generator)
-
-    # In a DenseNet layer, the weights are stored in get_weights()[0], 
-    # and the biases are stored in get_weights()[1].
-    model_weights = model.get_weights()[0]
-    np.save("data/weights.npy", model_weights)
-
-    return model
-
-def get_weights_B0(train_generator, test_generator, img_width, img_height, epochs):
-    model = EfficientNetB0( include_top=True, weights=None,
-                            classes=2, input_shape=(img_width, img_height, 3))
-   
-    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
-    model.fit(train_generator, epochs=epochs, validation_data=test_generator)
-
-    model_weights = model.get_weights()[0]
-    np.save("data/Efficient_weights.npy", model_weights)
-
-    return model
 
 
 
