@@ -46,7 +46,7 @@ class EfficientNet:
                           metrics=["accuracy"])
         
     def train(self, train_generator, validation_generator, epochs):
-        epochs = 2
+        epochs = 40
         verbose = 2
         efficientnet_history = self.model.fit(train_generator,validation_data=validation_generator,
                                               epochs = epochs, verbose = verbose)

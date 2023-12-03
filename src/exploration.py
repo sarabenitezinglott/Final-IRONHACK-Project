@@ -5,14 +5,13 @@ import seaborn as sns
 
 
 class DataImporter:
-    def __init__(self, data_path = "../Final-IRONHACK-Project/data/"):
+    def __init__(self, data_path = "D:/bootcamp/"):
         self.data_path = data_path
 
     def import_data(self, file_name):
         file_path = f"{self.data_path}{file_name}.csv"
         df = pd.read_csv(file_path)
         return df
-    
 
 class Explorer:
     def __init__(self,df):
@@ -35,8 +34,7 @@ class Explorer:
         new_df = self.df[["label", "center_id"]]
         new_df = pd.get_dummies(new_df, columns = ["label"])
         c = new_df.corr()
-        return c
-            
+        return c   
 
 class Visualization:
     def __init__(self, df):
@@ -69,6 +67,32 @@ class Visualization:
                     cmap = sns.cubehelix_palette(start=2.7, as_cmap=True),
                     linewidths=.5)
 
+class Labeling_images:
+    def __init__(self, df):
+        self.df = df 
 
+    def class_train(self):
+        # Images addresses
+        self.df["file_path"] = self.df["image_id"].apply(lambda x: "D:/bootcamp/original/" + x + ".tif")
+        return self.df
+
+    def class_test(self):
+        self.df["file_path"]  = self.df["image_id"].apply(lambda x: "D:/bootcamp/test/" + x + ".tif")
+        return self.df
+
+    def CElabels(self):
+        # Labels: binary classification (0 False, 1 True)
+        self.df["Y"] = self.df["label"].apply(lambda x : 1 if x=="CE" else 0) 
+        return self.df
+    
+    def class_again_train(self):
+        self.df["new_file_path"] = self.df["image_id"].apply(lambda x: "D:/bootcamp/original/train_folder/" + x + ".tif")
+        self.df.drop(columns = ["file_path"], inplace = True)
+        return self.df
+    
+    def class_again_val(self):
+        self.df["new_file_path"] = self.df["image_id"].apply(lambda x: "D:/bootcamp/original/val_folder1/" + x + ".tif")
+        self.df.drop(columns = ["file_path"], inplace = True)
+        return self.df
 
     

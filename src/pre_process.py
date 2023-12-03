@@ -16,62 +16,70 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.applications import densenet, EfficientNetB0
 
-def createfolders(data_path,folder_names):
-    data_path = "D:/bootcamp/original"
-    folder_names= ["train_folder", "val_folder1"]
+def train_valid_split(df):
+    train = df.drop(columns= ["Y"])
+    valid = df["Y"]
+    train_x, valid_x, train_y, valid_y = train_test_split(train,valid, test_size=0.2, stratify=df['label'], random_state=50)
+    return train_x, valid_x, train_y, valid_y
 
-    for folders in folder_names:
-        folder_path = os.path.join(data_path, folders)
+def createfolders(data_path,folder_names):
+    for folder in folder_names:
+        folder_path = os.path.join(data_path, folder)
         if not os.path.exists(folder_path):
             os.mkdir(folder_path)
-            print(f"Folder {folders} created at: {folder_path}")
+            print(f"Folder {folder} created at: {folder_path}")
         else: 
-            print(f"Folder {folders} already exists at: {folder_path}")
+            print(f"Folder {folder} already exists at: {folder_path}")
 
-def split_data(data_path):
-    all_images = [file for file in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, file))]
-    train_images, val_images = train_test_split(all_images, test_size=0.2, random_state=42)
-    
-    print(train_images)
-    print(val_images)
+def move_images(df, folder_path):
+    for _, i in df.iterrows():
+        src = i['file_path']
+        shutil.move(src, folder_path)
 
-    train_folder ="D:/bootcamp/original/train_folder"
-    val_folder = "D:/bootcamp/original/val_folder1"
-    
-    for image in train_images:
-        src_path_t = os.path.join(data_path, image)
-        dst_path_t = os.path.join(train_folder, image)
-        shutil.move(src_path_t, dst_path_t)
+def createsubfolders(data_path,folder_names):
+    for folder in folder_names:
+        folder_path = os.path.join(data_path, folder)
+        if not os.path.exists(folder_path):
+            os.mkdir(folder_path)
+            print(f"Folder {folder} created at: {folder_path}")
+        else: 
+            print(f"Folder {folder} already exists at: {folder_path}")
 
-    for image in val_images:
-        src_path_v = os.path.join(data_path, image)
-        dst_path_v = os.path.join(val_folder, image)
-        shutil.move(src_path_v, dst_path_v)
+def images_class(df, folder_path_CE, folder_path_LAA):
+    for _, i in df.iterrows():
+        if i["label"] == "CE":
+            src = i['new_file_path']
+            shutil.move(src, folder_path_CE)
+        else:
+            src = i['new_file_path']
+            shutil.move(src, folder_path_LAA)
 
 # Tried use mean subtraction, normalization, and standards to scale pixels, 
 # however each of these methods affected the colors of the images. Found an 
 # alternate approach in the "ImageDataGenerator" function. 
 
-
-def image_generator(original_data_dir, img_width, img_height, batch_size):
-    data_datagen = ImageDataGenerator(
-        validation_split=0.2,  
+def image_generator(train_dir, val_dir, img_width, img_height, batch_size):
+    train_datagen = ImageDataGenerator(
         rescale=1. / 255,
         zoom_range=0.2,
-        rotation_range=5,
+        rotation_range=40,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
         horizontal_flip=True, 
         fill_mode="nearest")
+    
+    test_datagen = ImageDataGenerator(rescale=1. / 255)
 
-    train_generator = data_datagen.flow_from_directory(
-        original_data_dir,
+    train_generator = train_datagen.flow_from_directory(
+        train_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='binary',
         color_mode='rgb',
         classes=None, subset="training")
 
-    validation_generator = data_datagen.flow_from_directory(
-        original_data_dir,
+    validation_generator = test_datagen.flow_from_directory(
+        val_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='binary',
@@ -96,6 +104,7 @@ def plot_augmented_images(train_generator, num_images=5):
         plt.title(f'Augmented {i + 1}')
 
     plt.show()
+
 
 
 

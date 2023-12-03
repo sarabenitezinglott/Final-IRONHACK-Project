@@ -17,7 +17,7 @@ from tensorflow.keras.applications import densenet, EfficientNetB0
 
 "DenseNet model:"
 class DenseNet_model:
-    def __init__(self, train_generator=None, validation_generator=None, img_width=224, img_height=224, epochs=2):
+    def __init__(self, train_generator=None, validation_generator=None, img_width=224, img_height=224, epochs=25):
         self.model = self.densenet_model(train_generator, validation_generator, img_width, img_height, epochs)
 
     #This CNN has three convolutiona layers -"Conv2D"- and 
@@ -40,9 +40,9 @@ class DenseNet_model:
     def compile_model(self):
         self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    def train(self, train_generator, validation_generator, epochs =2):
+    def train(self, train_generator, validation_generator, epochs = 25):
         nb_validation_samples = 4
-        batch_size = 2
+        batch_size = 20
 
         early_stop = EarlyStopping(monitor='val_loss', patience=8, verbose=1, min_delta=1e-4)
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=4, verbose=1, min_delta=1e-4)
@@ -61,8 +61,8 @@ class DenseNet_model:
         np.save("data/Dense_weights.npy", model_weights)
 
     def evaluation(self, validation_generator, class_names, batch_size):
-        batch_size = 2
-        verbose = 2
+        batch_size = 20
+        verbose = 1
         evaluate = self.model.evaluate(validation_generator, class_names, batch_size, verbose)
         return evaluate
 
