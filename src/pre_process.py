@@ -17,7 +17,7 @@ from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, D
 from tensorflow.keras.applications import densenet, EfficientNetB0
 
 def createfolders(data_path,folder_names):
-    data_path = "../Final-IRONHACK-Project/data/original/"
+    data_path = "D:/bootcamp/original"
     folder_names= ["train_folder", "val_folder1"]
 
     for folders in folder_names:
@@ -35,8 +35,8 @@ def split_data(data_path):
     print(train_images)
     print(val_images)
 
-    train_folder = "../Final-IRONHACK-Project/data/original/train_folder"
-    val_folder = "../Final-IRONHACK-Project/data/original/val_folder1"
+    train_folder ="D:/bootcamp/original/train_folder"
+    val_folder = "D:/bootcamp/original/val_folder1"
     
     for image in train_images:
         src_path_t = os.path.join(data_path, image)

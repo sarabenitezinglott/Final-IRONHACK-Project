@@ -17,7 +17,7 @@ from tensorflow.keras.applications import densenet, EfficientNetB0
 
 "DenseNet model:"
 class DenseNet_model:
-    def __init__(self, train_generator=None, validation_generator=None, img_width=150, img_height=150, epochs=2):
+    def __init__(self, train_generator=None, validation_generator=None, img_width=224, img_height=224, epochs=2):
         self.model = self.densenet_model(train_generator, validation_generator, img_width, img_height, epochs)
 
     #This CNN has three convolutiona layers -"Conv2D"- and 

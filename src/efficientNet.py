@@ -35,14 +35,14 @@ class EfficientNet:
 
         top_dropout_rate = 0.2
         x = layers.Dropout(top_dropout_rate, name="top_dropout")(x)
-        outputs = layers.Dense(2, activation="softmax", name="pred")(x)
+        outputs = layers.Dense(NUM_CLASSES, activation="softmax", name="pred")(x)
         model = keras.Model(inputs, outputs, name="EfficientNet")
         
         return model
 
     def compile_model(self):
         optimizer = keras.optimizers.Adam(learning_rate=1e-2)  
-        self.model.compile(optimizer=optimizer, loss="categorical_crossentropy", 
+        self.model.compile(optimizer=optimizer, loss="sparse_categorical_crossentropy", 
                           metrics=["accuracy"])
         
     def train(self, train_generator, validation_generator, epochs):
@@ -62,17 +62,20 @@ class EfficientNet:
     def evaluation_B0(self, test_generator_x,test_generator_y):
         evaluate = self.model.evaluate(test_generator_x,test_generator_y)
         return evaluate
+    
+    def predict_efficientNet(self, validation_generator, class_names):
+        image_batch, classes_batch = next(validation_generator)
+        predicted_batch = self.model.predict(image_batch)
+        for k in range(0,image_batch.shape[0]):
+            image = image_batch[k]
+            pred = predicted_batch[k]
+            the_pred = np.argmax(pred)
+            predicted = class_names[the_pred]
+            val_pred = max(pred)
+            the_class = np.argmax(classes_batch[k])
+            value = class_names[np.argmax(classes_batch[k])]
+        plt.figure(k)
+        plt.title( 'Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
+        plt.imshow(image)
 
 
-    # def unfreeze_model(self, model): #maybe ponerlo arriba jjeje
-    # # We unfreeze the top 20 layers while leaving BatchNorm layers 
-    # # frozen
-    #     for layer in model.layers[-20:]:
-    #         if not isinstance(layer, layers.BatchNormalization):
-    #             layer.trainable = True
-
-    #     optimizer = keras.optimizers.Adam(learning_rate=1e-5)
-    #     model.compile(
-    #         optimizer=optimizer, 
-    #         loss="categorical_crossentropy", 
-    #         metrics=["accuracy"])
