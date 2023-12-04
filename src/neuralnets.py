@@ -1,5 +1,5 @@
 import sys
-from pycore.tikzeng import *
+import pycore
 
 # DenseNet architecture definition
 densenet_architecture = [

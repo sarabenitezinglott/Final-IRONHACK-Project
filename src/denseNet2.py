@@ -1,30 +1,17 @@
-import warnings
-warnings.filterwarnings("ignore") 
-
-import numpy as np
-from keras.applications import densenet
-from keras.models import Model, load_model  
-from keras.layers import Activation, Dense  
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import categorical_crossentropy
-from keras import regularizers 
-import matplotlib.pyplot as plt
+import os
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, Dense
-from tensorflow.keras.applications import densenet
+from keras.preprocessing import image
+import numpy as np
+import matplotlib.pyplot as plt
 
-
-"DenseNet model:"
-class DenseNet_model:
+class YourDenseNetModel:
     def __init__(self):
         self.model = self.build_densenet_model()
         self.compile_model()
         self.train_generator = None
         self.validation_generator = None
-
-    #This CNN has three convolutiona layers -"Conv2D"- and 
-    #two fully connected layers -"Dense"model = Sequential()
 
     def build_densenet_model(self):
         model = Sequential()
@@ -39,7 +26,7 @@ class DenseNet_model:
         model.add(Dense(1, activation='sigmoid'))
 
         return model
-    
+
     def compile_model(self):
         self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -54,30 +41,32 @@ class DenseNet_model:
         callbacks_list = [early_stop, reduce_lr]
 
         history = self.model.fit_generator(
-            self.train_generator, 
+            self.train_generator,
             steps_per_epoch=int(np.ceil(x_train.shape[0] / batch_size)),
             epochs=epochs,
             validation_data=self.validation_generator,
-            validation_steps=nb_validation_samples // batch_size)
+            validation_steps=nb_validation_samples // batch_size,
+            callbacks=callbacks_list
+        )
 
         return history
 
     def get_weights(self):
-        # In a DenseNet layer, the weights are stored in get_weights()[0], 
-        # and the biases are stored in get_weights()[1].
         model_weights = self.model.get_weights()[0]
-        np.save("data/Dense_weights.npy", model_weights)
+        np.save("data/Dense_weights.h5", model_weights)
 
-    def evaluation(self, class_names, batch_size):
-        batch_size = 5
+    def evaluation(self, batch_size):
         verbose = 1
-        evaluate = self.model.evaluate(self.validation_generator, class_names, batch_size, verbose)
+        evaluate = self.model.evaluate(
+            self.validation_generator,
+            batch_size=batch_size,
+            verbose=verbose)
         return evaluate
 
-    def predict_densenet(self, class_names):  
+    def predict_densenet(self, class_names):
         image_batch, classes_batch = next(self.validation_generator)
         predicted_batch = self.model.predict(image_batch)
-        for k in range(0,image_batch.shape[0]):
+        for k in range(0, image_batch.shape[0]):
             image = image_batch[k]
             pred = predicted_batch[k]
             the_pred = np.argmax(pred)
@@ -85,8 +74,17 @@ class DenseNet_model:
             val_pred = max(pred)
             the_class = np.argmax(classes_batch[k])
             value = class_names[np.argmax(classes_batch[k])]
-        plt.figure(k)
-        plt.title( 'Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
-        plt.imshow(image)
+            plt.figure(k)
+            plt.title('Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
+            plt.imshow(image)
 
-        
+
+    def load_and_preprocess_images(image_folder, target_size=(150, 150)):
+        image_list = []
+        for filename in os.listdir(image_folder):
+            img_path = os.path.join(image_folder, filename)
+            img = image.load_img(img_path, target_size=target_size)
+            img_array = image.img_to_array(img)
+            image_list.append(img_array)
+
+        return np.array(image_list)

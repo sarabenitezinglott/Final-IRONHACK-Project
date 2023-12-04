@@ -89,7 +89,7 @@ The initial step prior to starting the coding process was to understand the cont
 ## Results 
 
 
-## Conclution
+## Conclusion
 
 ## Interesting literature
 

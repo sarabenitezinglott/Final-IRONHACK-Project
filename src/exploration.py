@@ -83,7 +83,7 @@ class Labeling_images:
     def CElabels(self):
         # Labels: binary classification (0 False, 1 True)
         self.df["Y"] = self.df["label"].apply(lambda x : 1 if x=="CE" else 0) 
-        return self.df
+        return self.df 
     
     def class_again_train(self):
         self.df["new_file_path"] = self.df["image_id"].apply(lambda x: "D:/bootcamp/original/train_folder/" + x + ".tif")

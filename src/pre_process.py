@@ -1,6 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+import numpy as np
 import os
 import random
 import shutil
@@ -9,12 +10,12 @@ import pandas as pd
 from PIL import Image
 from numpy import asarray
 import matplotlib.pyplot as plt
+from keras.applications import preprocess_input
 from keras.preprocessing.image import ImageDataGenerator 
 from tensorflow.python.keras import regularizers 
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Activation, Conv2D, MaxPooling2D, Flatten, Dense
-from tensorflow.keras.applications import densenet, EfficientNetB0
+from keras.applications.densenet import preprocess_input as preprocess_input_densenet
+from keras.applications.efficientnet import preprocess_input as preprocess_input_efficientnet
 
 def train_valid_split(df):
     train = df.drop(columns= ["Y"])
@@ -36,15 +37,6 @@ def move_images(df, folder_path):
         src = i['file_path']
         shutil.move(src, folder_path)
 
-def createsubfolders(data_path,folder_names):
-    for folder in folder_names:
-        folder_path = os.path.join(data_path, folder)
-        if not os.path.exists(folder_path):
-            os.mkdir(folder_path)
-            print(f"Folder {folder} created at: {folder_path}")
-        else: 
-            print(f"Folder {folder} already exists at: {folder_path}")
-
 def images_class(df, folder_path_CE, folder_path_LAA):
     for _, i in df.iterrows():
         if i["label"] == "CE":
@@ -58,34 +50,50 @@ def images_class(df, folder_path_CE, folder_path_LAA):
 # however each of these methods affected the colors of the images. Found an 
 # alternate approach in the "ImageDataGenerator" function. 
 
-def image_generator(train_dir, val_dir, img_width, img_height, batch_size):
+def image_generator():
     train_datagen = ImageDataGenerator(
-        rescale=1. / 255,
+        rescale=1./255,
+        shear_range=0.2,
         zoom_range=0.2,
-        rotation_range=40,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        horizontal_flip=True, 
-        fill_mode="nearest")
+        horizontal_flip=True)
     
-    test_datagen = ImageDataGenerator(rescale=1. / 255)
+    test_datagen = ImageDataGenerator(rescale=1./255)
 
     train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(img_width, img_height),
-        batch_size=batch_size,
-        class_mode='binary',
-        color_mode='rgb',
-        classes=None, subset="training")
-
+        "D:/bootcamp/original/try_train/",  # this is the target directory
+        target_size=(150, 150),  # all images will be resized to 150x150
+        batch_size=5,
+        class_mode='binary')  
+    
     validation_generator = test_datagen.flow_from_directory(
-        val_dir,
-        target_size=(img_width, img_height),
-        batch_size=batch_size,
-        class_mode='binary',
-        color_mode='rgb',
-        classes=None, subset="validation")
+        "D:/bootcamp/original/try_val/",
+        target_size=(150, 150),
+        batch_size=5,
+        class_mode='binary')
+    
+    return train_generator, validation_generator
 
+def image_generator_for_B0():
+    train_datagen = ImageDataGenerator(
+        rescale=1./255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True)
+    
+    test_datagen = ImageDataGenerator(rescale=1./255)
+
+    train_generator = train_datagen.flow_from_directory(
+        "D:/bootcamp/original/try_train/",  # this is the target directory
+        target_size=(224, 224),  # all images will be resized to 150x150
+        batch_size=5,
+        class_mode='binary')  
+    
+    validation_generator = test_datagen.flow_from_directory(
+        "D:/bootcamp/original/try_val/",
+        target_size=(224, 224),
+        batch_size=5,
+        class_mode='binary')
+    
     return train_generator, validation_generator
 
 def plot_augmented_images(train_generator, num_images=5):
@@ -106,6 +114,25 @@ def plot_augmented_images(train_generator, num_images=5):
     plt.show()
 
 
+def preprocess_images_with_generator(model_type, image_folder, target_size=(224, 224), batch_size=32):
+    if model_type == 'densenet':
+        preprocess_function = preprocess_input_densenet
+    elif model_type == 'efficientnet':
+        preprocess_function = preprocess_input_efficientnet
+    else:
+        raise ValueError("Invalid model type. Supported types are 'densenet' and 'efficientnet'.")
+
+    datagen = ImageDataGenerator(preprocessing_function=preprocess_function)
+
+    image_generator = datagen.flow_from_directory(
+        image_folder,
+        target_size=target_size,
+        batch_size=batch_size,
+        class_mode=None,
+        shuffle=False
+    )
+
+    return image_generator
 
 
 
