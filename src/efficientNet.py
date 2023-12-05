@@ -17,6 +17,7 @@ from tensorflow.keras.losses import categorical_crossentropy
 from keras import regularizers 
 import matplotlib.pyplot as plt
 
+
 "EfficientNet model:"
 
 class EfficientNet:
@@ -29,8 +30,6 @@ class EfficientNet:
         NUM_CLASSES = 2
         model = EfficientNetB0(include_top=False, input_tensor=inputs, 
                                weights=None,classes=NUM_CLASSES)
-    
-        model.trainable = False
 
         x = layers.GlobalAveragePooling2D(name="avg_pool")(model.output)
         x = layers.BatchNormalization()(x)
@@ -55,23 +54,16 @@ class EfficientNet:
 
         return efficientnet_history
     
-    def get_weights(self):
-        # In a DenseNet layer, the weights are stored in get_weights()[0], 
-        # and the biases are stored in get_weights()[1].
-        model_weights = self.model.get_weights()[0]
-        np.save("data/Efficient_weights.h5", model_weights)
-
+    def get_weights(self,weights_path):
+        self.model.save_weights(weights_path)
 
     def predict_efficientNet(self, validation_generator, class_names):  
-        # Assuming `validation_generator` is already set up correctly
-        image_batch, classes_batch = next(validation_generator)
-
-        # Preprocess input images
-        processed_images = efficientnet.preprocess_input(image_batch.copy())
-
-        # Predict using the preprocessed images
+        image_batch,classes_batch = next(validation_generator)
+        processed_images = efficientnet.keras.preprocess_input(image_batch.copy())
         predicted_batch = self.model.predict(processed_images)
 
+
+        fig, axes = plt.subplots(1, image_batch.shape[0], figsize=(12, 4))
         for k in range(0, image_batch.shape[0]):
             image = image_batch[k]
             pred = predicted_batch[k]
@@ -79,39 +71,19 @@ class EfficientNet:
             predicted = class_names[the_pred]
             val_pred = max(pred)
             the_class = np.argmax(classes_batch[k])
-            value = class_names[np.argmax(classes_batch[k])]
+            value = class_names[the_class]
 
-            plt.figure(k)
-            plt.title('Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
-            plt.imshow(image)
+            axes[k].imshow(image)
+            axes[k].set_title('Class:' + value + ' - ' + 'Pred ratio of:' + predicted + '[' + str(val_pred) + ']', fontsize=6)
 
+            plt.show()
 
-    def load_weights(self,weights_path):
-        self.model.load_weights(weights_path, allow_pickle=True)
+    def load_weights(self, weights_path):
+        self.model.load_weights(weights_path)
 
-    def predict_efficientNet(self, validation_generator, class_names):
-        image_batch, classes_batch = next(validation_generator)
-        predicted_batch = self.model.predict(image_batch)
-        for k in range(0,image_batch.shape[0]):
-            image = image_batch[k]
-            pred = predicted_batch[k]
-            the_pred = np.argmax(pred)
-            predicted = class_names[the_pred]
-            val_pred = max(pred)
-            the_class = np.argmax(classes_batch[k])
-            value = class_names[np.argmax(classes_batch[k])]
-        plt.figure(k)
-        plt.title( 'Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
-        plt.imshow(image)
+    def predict_on_data(self, test_data, class_names):  
+        processed_images = efficientnet.keras.preprocess_input(test_data)
+        predicted_batch = self.model.predict(processed_images)
 
-
-    def load_and_preprocess_images(image_folder, target_size=(224, 224)):
-        image_list = []
-        for filename in os.listdir(image_folder):
-            img_path = os.path.join(image_folder, filename)
-            img = image.load_img(img_path, target_size=target_size)
-            img_array = image.img_to_array(img)
-            image_list.append(img_array)
-
-        return np.array(image_list)
+        return predicted_batch
 

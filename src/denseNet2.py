@@ -1,4 +1,7 @@
 import os
+import keras
+from keras.applications.densenet import DenseNet121
+from keras.applications.densenet import preprocess_input as densenet_preprocess_input
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -23,7 +26,7 @@ class YourDenseNetModel:
         model.add(MaxPooling2D((2, 2)))
         model.add(Flatten())
         model.add(Dense(128, activation='relu'))
-        model.add(Dense(1, activation='sigmoid'))
+        model.add(Dense(1, activation='softmax'))
 
         return model
 
@@ -51,9 +54,8 @@ class YourDenseNetModel:
 
         return history
 
-    def get_weights(self):
-        model_weights = self.model.get_weights()[0]
-        np.save("data/Dense_weights.h5", model_weights)
+    def get_weights(self,weights_path):
+        self.model.save_weights(weights_path)
 
     def evaluation(self, batch_size):
         verbose = 1
@@ -78,13 +80,11 @@ class YourDenseNetModel:
             plt.title('Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
             plt.imshow(image)
 
+    def load_weights(self, weights_path):
+        self.model.load_weights(weights_path)
 
-    def load_and_preprocess_images(image_folder, target_size=(150, 150)):
-        image_list = []
-        for filename in os.listdir(image_folder):
-            img_path = os.path.join(image_folder, filename)
-            img = image.load_img(img_path, target_size=target_size)
-            img_array = image.img_to_array(img)
-            image_list.append(img_array)
+    def predict_on_data(self, test_data, class_names):  
+        processed_images = densenet_preprocess_input(test_data)
+        predicted_batch = self.model.predict(processed_images)
 
-        return np.array(image_list)
+        return predicted_batch

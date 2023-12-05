@@ -1,4 +1,5 @@
 .gitignore
 data/*
-
-
+./src/__pycache__/*
+**/__pycache__
+**/*.h5
