@@ -18,7 +18,7 @@ class YourDenseNetModel:
 
     def build_densenet_model(self):
         model = Sequential()
-        model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)))
+        model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(380, 380, 3)))
         model.add(MaxPooling2D((2, 2)))
         model.add(Conv2D(64, (3, 3), activation='relu'))
         model.add(MaxPooling2D((2, 2)))
@@ -26,7 +26,7 @@ class YourDenseNetModel:
         model.add(MaxPooling2D((2, 2)))
         model.add(Flatten())
         model.add(Dense(128, activation='relu'))
-        model.add(Dense(1, activation='softmax'))
+        model.add(Dense(1, activation='sigmoid'))
 
         return model
 
@@ -37,7 +37,7 @@ class YourDenseNetModel:
         self.train_generator = train_generator
         self.validation_generator = validation_generator
 
-    def train(self, x_train, epochs=1, batch_size=5):
+    def train(self, x_train, epochs=2, batch_size=5):
         nb_validation_samples = 8
         early_stop = EarlyStopping(monitor='val_loss', patience=8, verbose=1, min_delta=1e-4)
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=4, verbose=1, min_delta=1e-4)
@@ -75,10 +75,16 @@ class YourDenseNetModel:
             predicted = class_names[the_pred]
             val_pred = max(pred)
             the_class = np.argmax(classes_batch[k])
-            value = class_names[np.argmax(classes_batch[k])]
-            plt.figure(k)
-            plt.title('Class: ' + value + ' - ' + 'Prediction ratio of: ' + predicted + '[' + str(val_pred) + ']')
+            value = class_names[the_class]
+
             plt.imshow(image)
+            plt.title(f"{value} - Pred ratio: {predicted} [{val_pred}]", fontsize=8)
+            
+            # Save images separately
+            save_file = os.path.join("./images/denseNet/", f'prediction_{k}.png')
+            plt.savefig(save_file)
+            plt.close()  
+
 
     def load_weights(self, weights_path):
         self.model.load_weights(weights_path)

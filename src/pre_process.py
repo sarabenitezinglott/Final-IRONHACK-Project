@@ -68,19 +68,19 @@ def image_generator():
 
     train_generator = train_datagen.flow_from_directory(
         "D:/bootcamp/original/try_train/",  # this is the target directory
-        target_size=(150, 150),  # all images will be resized to 150x150
+        target_size=(380, 380),  # all images will be resized to 150x150
         batch_size=5,
         class_mode='binary')  
     
     validation_generator = test_datagen.flow_from_directory(
         "D:/bootcamp/original/try_val/",
-        target_size=(150, 150),
+        target_size=(380, 380),
         batch_size=5,
         class_mode='binary')
     
     return train_generator, validation_generator
 
-def image_generator_for_B0():
+def image_generator_for_B4():
     train_datagen = ImageDataGenerator(
         rescale=1./255,
         shear_range=0.2,
@@ -91,13 +91,13 @@ def image_generator_for_B0():
 
     train_generator = train_datagen.flow_from_directory(
         "D:/bootcamp/original/try_train/",  # this is the target directory
-        target_size=(224, 224),  # all images will be resized to 150x150
+        target_size=(380, 380),  # all images will be resized to 150x150
         batch_size=5,
         class_mode='binary', shuffle=False)  
     
     validation_generator = test_datagen.flow_from_directory(
         "D:/bootcamp/original/try_val/",
-        target_size=(224, 224),
+        target_size=(380, 380),
         batch_size=5,
         class_mode='binary', shuffle=False)
     
