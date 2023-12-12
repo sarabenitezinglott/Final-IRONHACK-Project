@@ -26,7 +26,7 @@ class EfficientNet:
 
     def efficient_model(self):
         #Image size has to be 380 because we are using the EficcientNet B0 type.
-        inputs = layers.Input(shape=(380, 380, 3))
+        inputs = layers.Input(shape=(500, 500, 3))
         NUM_CLASSES = 2
         model = EfficientNetB4(include_top=False, input_tensor=inputs, 
                                weights=None,classes=NUM_CLASSES)

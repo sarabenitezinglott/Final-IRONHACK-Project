@@ -18,18 +18,18 @@ class YourDenseNetModel:
 
     def build_densenet_model(self):
         model = Sequential()
-        model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(380, 380, 3)))
+        model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(500, 500, 3)))
         model.add(MaxPooling2D((2, 2)))
         model.add(Conv2D(64, (3, 3), activation='relu'))
         model.add(MaxPooling2D((2, 2)))
         model.add(Conv2D(128, (3, 3), activation='relu'))
-        model.add(MaxPooling2D((2, 2)))
+        model.add(MaxPooling2D((2, 2), padding='same'))
         model.add(Flatten())
         model.add(Dense(128, activation='relu'))
         model.add(Dense(1, activation='sigmoid'))
 
         return model
-
+    
     def compile_model(self):
         self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -37,22 +37,25 @@ class YourDenseNetModel:
         self.train_generator = train_generator
         self.validation_generator = validation_generator
 
-    def train(self, x_train, epochs=2, batch_size=5):
-        nb_validation_samples = 8
+    def train(self, x_train, epochs=3, batch_size=32):
+        nb_validation_samples = 159
         early_stop = EarlyStopping(monitor='val_loss', patience=8, verbose=1, min_delta=1e-4)
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=4, verbose=1, min_delta=1e-4)
         callbacks_list = [early_stop, reduce_lr]
 
-        history = self.model.fit_generator(
-            self.train_generator,
-            steps_per_epoch=int(np.ceil(x_train.shape[0] / batch_size)),
-            epochs=epochs,
-            validation_data=self.validation_generator,
-            validation_steps=nb_validation_samples // batch_size,
-            callbacks=callbacks_list
-        )
+        # Calculate steps per epoch and validation steps
+        steps_per_epoch = len(x_train)//batch_size
+        validation_steps = int(np.ceil(nb_validation_samples / batch_size))
+
+        history = self.model.fit(self.train_generator,
+                                    steps_per_epoch=steps_per_epoch,
+                                    epochs=epochs,
+                                    validation_data=self.validation_generator,
+                                    validation_steps=validation_steps,
+                                    callbacks=callbacks_list)
 
         return history
+
 
     def get_weights(self,weights_path):
         self.model.save_weights(weights_path)

@@ -1,5 +1,8 @@
 .gitignore
 data/*
 ./src/__pycache__/*
-**/__pycache__
+**/__pycache__/
 **/*.h5
+**/__pycache__/denseNet2.cpython-310.pyc
+**/__pycache__/efficientNet.cpython-310.pyc
+**/__pycache__/pre_process.cpython-310.pyc
