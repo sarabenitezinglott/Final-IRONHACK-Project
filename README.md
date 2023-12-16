@@ -10,9 +10,9 @@ An ischemic stroke occurs when a blood clot, known as a thrombus, plugs or block
 
 ## Stroke Blood Clots: Molecular Biology Overview
 
-A blood clot is a partially solid mass that usually forms within blood vessels and is made up of blood cells and other biological cellular components. Even though it is the main cause of strokes, it is important to remember that clot formation frequently has a positive function: it stops tissue bleeding when injury occurs [[4](https://my.clevelandclinic.org/health/body/17675-blood-clots)].
+A blood clot is a partially solid mass that usually forms within blood vessels and is made up of blood cells and other biological cellular components. Even though it is the main cause of strokes, it is important to remember that clot formation frequently has a positive function: it stops tissue bleeding when injury occurs [[3](https://my.clevelandclinic.org/health/body/17675-blood-clots)].
 
-Regarding its composition, blood clots contains mainly: red blood cells (RBCs), fibrin(proteins), platelets (cells from the bone marrow) and white blood cells (WBCs) [[5](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6910231/)], which later we will talk about.
+Regarding its composition, blood clots contains mainly: red blood cells (RBCs), fibrin(proteins), platelets (cells from the bone marrow) and white blood cells (WBCs) [[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6910231/)], which later we will talk about.
 
 ## Dataset
 
